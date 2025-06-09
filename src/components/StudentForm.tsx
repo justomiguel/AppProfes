@@ -18,8 +18,9 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState(student?.name || '');
   const [isGroup, setIsGroup] = useState(!!student?.group);
-  const [groupName, setGroupName] = useState(student?.group || '');
-  const [groupMembers, setGroupMembers] = useState<string[]>(student?.groupMembers || ['']);
+  const [groupMembers, setGroupMembers] = useState<string[]>(
+    student?.groupMembers || ['', '']
+  );
   const [uploadedFiles, setUploadedFiles] = useState<StudentFile[]>(student?.files || []);
   const { t } = useTranslations();
 

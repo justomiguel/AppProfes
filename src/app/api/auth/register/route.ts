@@ -23,12 +23,13 @@ export async function POST(request: NextRequest) {
     // Create user
     const user = await createUser(username, email, password);
 
-    // Return user without password
-    const { password_hash, ...userWithoutPassword } = user;
+    // Return user without sensitive data
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password_hash, ...userWithoutSensitiveData } = user;
 
     return NextResponse.json({
       message: 'Usuario creado exitosamente',
-      user: userWithoutPassword
+      user: userWithoutSensitiveData
     });
 
   } catch (error) {

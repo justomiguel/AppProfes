@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Key, Globe, Sliders, Zap, FileText, RotateCcw, Settings, Download, Cpu, Cloud, Trash2, Pause, Play, HardDrive, CheckCircle, AlertCircle, Clock, FolderOpen, Info } from 'lucide-react';
 import { useTranslations } from '../hooks/useTranslations';
 import { modelConfigService } from '../lib/models/config';
@@ -18,12 +18,41 @@ interface ModelDownloadStatus {
 }
 
 interface SettingsFormProps {
-  onSave: () => void;
+  onSave: (settings: UserSettings) => void;
   onCancel: () => void;
 }
 
+interface UserSettings {
+  llmProvider: 'openai' | 'local';
+  openai: {
+    apiKey: string;
+    model: 'gpt-3.5-turbo' | 'gpt-4' | 'gpt-4o';
+    maxTokens: number;
+    temperature: number;
+  };
+  localLLM: {
+    model: string;
+    maxTokens: number;
+    temperature: number;
+  };
+  language: 'es' | 'en';
+  gradeScale: {
+    min: number;
+    max: number;
+  };
+  customPrompts: {
+    systemPrompt: string;
+    evaluationPrefix: string;
+    gradingCriteria: string;
+  };
+}
+
+interface GlobalSettings {
+  [key: string]: unknown;
+}
+
 export default function SettingsForm({ onSave, onCancel }: SettingsFormProps) {
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<UserSettings>({
     llmProvider: 'openai' as 'openai' | 'local',
     openai: {
       apiKey: '',
@@ -48,7 +77,7 @@ export default function SettingsForm({ onSave, onCancel }: SettingsFormProps) {
     },
   });
 
-  const [globalSettings, setGlobalSettings] = useState<any>(null);
+  const [globalSettings, setGlobalSettings] = useState<GlobalSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -465,7 +494,7 @@ export default function SettingsForm({ onSave, onCancel }: SettingsFormProps) {
       setSuccessMessage(t('settings.saved'));
       
       setTimeout(() => {
-        onSave();
+        onSave(settingsToSave);
       }, 1000);
 
     } catch (error) {

@@ -5,92 +5,91 @@ import { generateToken } from '../../../../lib/auth';
 // Simple rate limiting (in production, use Redis or similar)
 const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
 
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const attempts = loginAttempts.get(ip);
-  
-  if (!attempts) {
-    loginAttempts.set(ip, { count: 1, lastAttempt: now });
-    return false;
-  }
-  
-  // Reset counter after 15 minutes
-  if (now - attempts.lastAttempt > 15 * 60 * 1000) {
-    loginAttempts.set(ip, { count: 1, lastAttempt: now });
-    return false;
-  }
-  
-  // Allow max 5 attempts per 15 minutes
-  if (attempts.count >= 5) {
-    return true;
-  }
-  
-  attempts.count++;
-  attempts.lastAttempt = now;
-  return false;
-}
-
 export async function POST(request: NextRequest) {
   try {
-    // Get client IP for rate limiting
-    const ip = request.headers.get('x-forwarded-for') || 
-               request.headers.get('x-real-ip') || 
-               'unknown';
-    
-    if (isRateLimited(ip)) {
-      return NextResponse.json(
-        { error: 'Demasiados intentos de login. Intenta de nuevo en 15 minutos.' },
-        { status: 429 }
-      );
-    }
-
     const { username, password } = await request.json();
 
-    // Validate input
     if (!username || !password) {
       return NextResponse.json(
-        { error: 'Username y password son requeridos' },
+        { error: 'Username and password are required' },
         { status: 400 }
       );
     }
 
-    // Authenticate user
-    const user = await authenticateUser(username, password);
-
-    if (!user) {
+    // Simple rate limiting
+    const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
+    const now = Date.now();
+    const attempts = loginAttempts.get(clientIP);
+    
+    if (attempts && attempts.count >= 5 && now - attempts.lastAttempt < 15 * 60 * 1000) {
       return NextResponse.json(
-        { error: 'Credenciales inválidas' },
+        { error: 'Too many login attempts. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
+    try {
+      const user = await authenticateUser(username, password);
+      
+      if (!user) {
+        // Update rate limiting
+        const currentAttempts = loginAttempts.get(clientIP) || { count: 0, lastAttempt: 0 };
+        loginAttempts.set(clientIP, {
+          count: currentAttempts.count + 1,
+          lastAttempt: now
+        });
+        
+        return NextResponse.json(
+          { error: 'Invalid credentials' },
+          { status: 401 }
+        );
+      }
+
+      // Reset rate limiting on successful login
+      loginAttempts.delete(clientIP);
+
+      // Generate JWT token
+      const token = generateToken(user.id, user.username);
+
+      // Return user without sensitive data
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password_hash, openai_api_key_encrypted, ...userWithoutSensitiveData } = user;
+
+      // Set HTTP-only cookie
+      const response = NextResponse.json({ 
+        message: 'Login successful',
+        user: userWithoutSensitiveData
+      });
+      
+      response.cookies.set('auth-token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 // 24 hours
+      });
+
+      return response;
+
+    } catch (authError) {
+      console.error('Authentication error:', authError);
+      
+      // Update rate limiting
+      const currentAttempts = loginAttempts.get(clientIP) || { count: 0, lastAttempt: 0 };
+      loginAttempts.set(clientIP, {
+        count: currentAttempts.count + 1,
+        lastAttempt: now
+      });
+      
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
         { status: 401 }
       );
     }
 
-    // Generate JWT token
-    const token = generateToken(user.id, user.username);
-
-    // Return user without password and token
-    const { password_hash, openai_api_key_encrypted, ...userWithoutSensitiveData } = user;
-
-    const response = NextResponse.json({
-      message: 'Login exitoso',
-      user: userWithoutSensitiveData,
-      token
-    });
-
-    // Set HTTP-only cookie with security flags
-    response.cookies.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: process.env.NODE_ENV === 'production' ? 24 * 60 * 60 : 7 * 24 * 60 * 60, // 1 day in prod, 7 days in dev
-      path: '/'
-    });
-
-    return response;
-
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

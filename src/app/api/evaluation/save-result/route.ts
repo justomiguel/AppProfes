@@ -17,6 +17,8 @@ export async function POST(request: NextRequest) {
       explanation, 
       feedback, 
       aiModel,
+      // Check if this is a re-evaluation (for future use)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       isReEvaluation
     } = await request.json();
 

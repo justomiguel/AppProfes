@@ -63,6 +63,7 @@ export async function PUT(request: NextRequest) {
     if (settings.openai.apiKey) {
       await updateUserApiKey(user.id, settings.openai.apiKey);
       // Remove API key from settings object before storing
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { apiKey, ...openaiWithoutKey } = settings.openai;
       settings.openai = openaiWithoutKey;
     }
