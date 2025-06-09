@@ -558,14 +558,36 @@ export default function StudentsPage({ evaluation, onBack, onAddStudent, onEditS
   };
 
   const generateCourseReport = () => {
-    const evaluatedResults = results.filter(r => students.some(s => s.id === r.studentId));
+    // Force fresh data load to avoid cache issues
+    console.log('=== FORCING FRESH DATA LOAD FOR REPORT ===');
     
-    if (evaluatedResults.length === 0) {
+    const freshStudents = StorageService.getStudentsByEvaluation(evaluation.id);
+    const freshResults = StorageService.getResults().filter(r => 
+      freshStudents.some(s => s.id === r.studentId)
+    );
+    
+    console.log('Fresh students loaded:', freshStudents.length);
+    console.log('Fresh results loaded:', freshResults.length);
+    
+    // Log each student for debugging
+    freshStudents.forEach((student, index) => {
+      console.log(`Student ${index + 1}:`, {
+        id: student.id,
+        name: student.name,
+        group: student.group,
+        groupMembers: student.groupMembers,
+        isGroup: !!student.group,
+        groupMembersLength: student.groupMembers ? student.groupMembers.length : 0,
+        groupMembersContent: student.groupMembers
+      });
+    });
+    
+    if (freshResults.length === 0) {
       alert('No hay estudiantes evaluados para generar el reporte.');
       return;
     }
 
-    ReportService.generateCourseReport(evaluation, students, evaluatedResults);
+    ReportService.generateCourseReport(evaluation, freshStudents, freshResults);
   };
 
   const getGradeColorClasses = (grade: string | number) => {

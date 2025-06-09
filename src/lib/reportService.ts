@@ -166,6 +166,12 @@ export class ReportService {
     students: Student[],
     results: EvaluationResult[]
   ): void {
+    // Force fresh data load to avoid cache issues
+    console.log('=== GENERATING COURSE REPORT ===');
+    console.log('Evaluation:', evaluation.name);
+    console.log('Total students received:', students.length);
+    console.log('Total results received:', results.length);
+    
     const doc = new jsPDF();
     
     // Header
@@ -265,51 +271,77 @@ export class ReportService {
     doc.text('Detalle por Estudiante', 20, yPosition);
     yPosition += 10;
 
-    const studentData = students.map(student => {
+    const studentData: any[] = [];
+    
+    students.forEach(student => {
       const result = results.find(r => r.studentId === student.id);
       
-      // Debug: Let's see what we actually have
-      console.log('Student data:', {
-        name: student.name,
-        group: student.group,
-        groupMembers: student.groupMembers,
-        isGroup: !!student.group
-      });
+      // Enhanced debug logging
+      console.log('=== PROCESSING STUDENT ===');
+      console.log('Student ID:', student.id);
+      console.log('Student name:', student.name);
+      console.log('Student group:', student.group);
+      console.log('Student groupMembers:', student.groupMembers);
+      console.log('Is group?:', !!student.group);
+      console.log('Result found?:', !!result);
+      console.log('========================');
       
-      let firstColumn, secondColumn;
-      
-      if (student.group) {
-        // It's a group
-        firstColumn = student.name; // Group name
-        secondColumn = student.groupMembers && student.groupMembers.length > 0 
-          ? student.groupMembers.filter(m => m.trim()).join(', ')
-          : 'Sin integrantes especificados';
+      if (student.group && student.groupMembers && student.groupMembers.length > 0) {
+        // It's a group: create one row per group member
+        const groupName = student.name; // Group name (stored in student.name)
+        const gradeText = result ? (result.grade || 0).toString() : 'Pendiente';
+        
+        student.groupMembers.filter(member => member.trim() !== '').forEach(memberName => {
+          console.log('Adding group member row:', {
+            groupName,
+            memberName: memberName.trim(),
+            grade: gradeText
+          });
+          
+          studentData.push([
+            groupName,           // Group name in first column
+            memberName.trim(),   // Individual member name in second column
+            gradeText           // Grade in third column
+          ]);
+        });
+        
+        // If no members specified, show a single row with "Sin integrantes"
+        if (student.groupMembers.filter(member => member.trim() !== '').length === 0) {
+          studentData.push([
+            groupName,
+            'Sin integrantes especificados',
+            gradeText
+          ]);
+        }
       } else {
-        // It's an individual student
-        firstColumn = student.name; // Student name
-        secondColumn = 'N/A';
+        // It's an individual student: single row
+        const studentName = student.name;
+        const gradeText = result ? (result.grade || 0).toString() : 'Pendiente';
+        
+        console.log('Adding individual student row:', {
+          studentName,
+          grade: gradeText
+        });
+        
+        studentData.push([
+          studentName,  // Student name in first column
+          'N/A',       // No group members for individual students
+          gradeText    // Grade in third column
+        ]);
       }
-      
-      return [
-        firstColumn,
-        secondColumn,
-        result ? (result.grade || 0).toString() : 'Pendiente',
-        result && result.evaluatedAt ? new Date(result.evaluatedAt).toLocaleDateString('es-ES') : 'N/A'
-      ];
     });
 
     autoTable(doc, {
       startY: yPosition,
-      head: [['Estudiante/Grupo', 'Integrantes', 'Calificación', 'Fecha']],
+      head: [['Nombre Grupo', 'Nombre Integrante', 'Nota']],
       body: studentData,
       theme: 'grid',
       headStyles: { fillColor: [255, 152, 0], textColor: 255, fontStyle: 'bold' },
       styles: { fontSize: 10, cellPadding: 3 },
       columnStyles: { 
-        0: { cellWidth: 50 },
-        1: { cellWidth: 60 },
-        2: { cellWidth: 25, halign: 'center' },
-        3: { cellWidth: 35, halign: 'center' }
+        0: { cellWidth: 60 }, // Group name column
+        1: { cellWidth: 80 }, // Member names column  
+        2: { cellWidth: 30, halign: 'center' } // Grade column
       },
       didDrawCell: function(data: any) {
         // Color pending evaluations
@@ -318,7 +350,7 @@ export class ReportService {
           data.cell.styles.textColor = [198, 40, 40];
         }
         // Color evaluated students
-        else if (data.column.index === 2 && data.cell.text[0] !== 'Pendiente' && data.cell.text[0] !== 'Calificación') {
+        else if (data.column.index === 2 && data.cell.text[0] !== 'Pendiente' && data.cell.text[0] !== 'Nota') {
           data.cell.styles.fillColor = [232, 245, 233];
           data.cell.styles.textColor = [46, 125, 50];
         }
@@ -328,8 +360,9 @@ export class ReportService {
     // Add footer
     this.addFooter(doc);
 
-    // Download
-    const filename = `reporte_curso_${evaluation.name.replace(/\s+/g, '_')}.pdf`;
+    // Download with timestamp to prevent caching
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const filename = `reporte_curso_${evaluation.name.replace(/\s+/g, '_')}_${timestamp}.pdf`;
     doc.save(filename);
   }
 } 

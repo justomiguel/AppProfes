@@ -32,7 +32,7 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
       const processedFiles = await processMultipleFiles(files);
       setUploadedFiles(prev => [...prev, ...processedFiles]);
     } catch (error) {
-      alert(error instanceof Error ? error.message : `${t.error}: ${error}`);
+      alert(error instanceof Error ? error.message : `Error: ${error}`);
     } finally {
       setIsLoading(false);
       event.target.value = '';
@@ -59,34 +59,46 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
     e.preventDefault();
     
     if (!name.trim()) {
-      alert(t.nameRequired);
+      alert(t('students.nameRequired'));
       return;
     }
 
     if (uploadedFiles.length === 0) {
-      alert(t.filesRequired);
+      alert(t('students.filesRequired'));
       return;
     }
 
     setIsLoading(true);
     try {
-      const now = new Date();
+      const now = new Date().toISOString();
+      
+      // Debug logging to see what we're about to save
+      console.log('=== SAVING STUDENT DATA ===');
+      console.log('Name:', name.trim());
+      console.log('Is Group:', isGroup);
+      console.log('Group Members (raw):', groupMembers);
+      console.log('Group Members (filtered):', groupMembers.filter(member => member.trim() !== ''));
+      
       const studentData: Student = {
         id: student?.id || StorageService.generateId(),
         name: name.trim(),
         group: isGroup ? name.trim() : undefined,
         groupMembers: isGroup ? groupMembers.filter(member => member.trim() !== '') : undefined,
         evaluationId,
+        userId: '1', // Default user ID for now
         files: uploadedFiles,
         createdAt: student?.createdAt || now,
         updatedAt: now,
       };
 
+      console.log('Final student data to save:', studentData);
+      console.log('========================');
+
       StorageService.saveStudent(studentData);
       onSave(studentData);
     } catch (error) {
       console.error('Error saving student:', error);
-      alert(`${t.error}: ${error}`);
+      alert(`Error: ${error}`);
     } finally {
       setIsLoading(false);
     }
@@ -95,14 +107,14 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        {student ? t.editStudent : t.addStudent}
+        {student ? t('students.editStudent') : t('students.addStudent')}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Tipo: Individual o Grupo */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-3">
-            {t.language === 'es' ? 'Tipo de Entrega' : 'Submission Type'}
+            {t('students.submissionType')}
           </label>
           <div className="flex space-x-4">
             <button
@@ -115,7 +127,7 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
               }`}
             >
               <User className="h-4 w-4 mr-2" />
-              {t.individual}
+              {t('students.individual')}
             </button>
             <button
               type="button"
@@ -127,7 +139,7 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
               }`}
             >
               <Users className="h-4 w-4 mr-2" />
-              {t.groupWork}
+              {t('students.groupWork')}
             </button>
           </div>
         </div>
@@ -136,9 +148,9 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
             {isGroup 
-              ? (t.language === 'es' ? 'Nombre del Grupo *' : 'Group Name *')
-              : `${t.studentName} *`
-            }
+              ? t('students.groupName')
+              : t('students.studentName')
+            } *
           </label>
           <input
             type="text"
@@ -147,8 +159,8 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
             onChange={(e) => setName(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder={isGroup 
-              ? (t.language === 'es' ? 'Ej: Grupo Alpha' : 'E.g.: Alpha Group')
-              : (t.language === 'es' ? 'Ej: Juan Pérez' : 'E.g.: John Doe')
+              ? t('students.groupNamePlaceholder')
+              : t('students.studentNamePlaceholder')
             }
             required
           />
@@ -158,7 +170,7 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
         {isGroup && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t.groupMembers}
+              {t('students.groupMembers')}
             </label>
             <div className="space-y-2">
               {groupMembers.map((member, index) => (
@@ -168,10 +180,7 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
                     value={member}
                     onChange={(e) => updateGroupMember(index, e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder={t.language === 'es' 
-                      ? `Integrante ${index + 1}` 
-                      : `Member ${index + 1}`
-                    }
+                    placeholder={t('students.memberPlaceholder', { number: index + 1 })}
                   />
                   {groupMembers.length > 1 && (
                     <button
@@ -190,7 +199,7 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
                 className="flex items-center px-3 py-2 text-sm text-blue-600 hover:text-blue-800"
               >
                 <Plus className="h-4 w-4 mr-1" />
-                {t.language === 'es' ? 'Agregar Integrante' : 'Add Member'}
+                {t('students.addMember')}
               </button>
             </div>
           </div>
@@ -199,7 +208,7 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
         {/* Carga de archivos */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t.language === 'es' ? 'Archivos del Trabajo *' : 'Assignment Files *'}
+            {t('students.assignmentFiles')} *
           </label>
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
             <input
@@ -213,14 +222,10 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
             <label htmlFor="file-upload" className="cursor-pointer">
               <Upload className="mx-auto h-12 w-12 text-gray-400" />
               <p className="mt-2 text-sm text-gray-600">
-                {t.language === 'es' 
-                  ? 'Haz clic para subir archivos o arrastra y suelta' 
-                  : 'Click to upload files or drag and drop'}
+                {t('students.uploadInstructions')}
               </p>
               <p className="text-xs text-gray-500">
-                {t.language === 'es' 
-                  ? 'PDF, DOCX, TXT, MD, JS, TS, HTML, CSS, ZIP (máx. 10MB por archivo)' 
-                  : 'PDF, DOCX, TXT, MD, JS, TS, HTML, CSS, ZIP (max. 10MB per file)'}
+                {t('students.supportedFormats')}
               </p>
             </label>
           </div>
@@ -229,7 +234,7 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
           {uploadedFiles.length > 0 && (
             <div className="mt-4 space-y-2">
               <h4 className="text-sm font-medium text-gray-700">
-                {t.language === 'es' ? 'Archivos subidos:' : 'Uploaded files:'}
+                {t('students.uploadedFiles')}
               </h4>
               {uploadedFiles.map((file) => (
                 <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
@@ -261,14 +266,14 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             disabled={isLoading}
           >
-            {t.cancel}
+            {t('common.cancel')}
           </button>
           <button
             type="submit"
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isLoading}
           >
-            {isLoading ? t.saving : t.save}
+            {isLoading ? t('common.saving') : t('common.save')}
           </button>
         </div>
       </form>
