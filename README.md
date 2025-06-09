@@ -1,188 +1,224 @@
-# AI Evaluador
+# 🤖 AI Evaluador
 
-Una aplicación web fullstack para profesores que permite realizar correcciones automáticas utilizando OpenAI. La app está construida con una arquitectura limpia siguiendo principios SOLID y buenas prácticas de diseño.
+Sistema de evaluación automática con IA para profesores. Permite crear evaluaciones, subir trabajos de estudiantes y obtener calificaciones automáticas utilizando OpenAI.
 
-## 🚀 Características
+## ✨ Características
 
-### Evaluaciones
-- ✅ Crear evaluaciones con nombre, consigna y rúbrica
-- ✅ Editar y eliminar evaluaciones existentes
-- ✅ Gestión completa del ciclo de vida de evaluaciones
+- 🔐 **Sistema de autenticación seguro** con JWT y rate limiting
+- 📝 **Gestión de evaluaciones** con prompts y rúbricas personalizables
+- 👥 **Gestión de estudiantes** individual y grupal
+- 🤖 **Evaluación automática** con OpenAI (GPT-3.5, GPT-4, GPT-4o)
+- 📄 **Soporte múltiples formatos** de archivo (PDF, DOCX, ZIP, TXT, JS, TS, MD)
+- 🔒 **API Keys cifradas** con AES-256-CBC
+- 🌍 **Multiidioma** (Español/Inglés)
+- 📊 **Reportes en PDF** con calificaciones y retroalimentación
+- 🎨 **Interfaz moderna** con Tailwind CSS
 
-### Alumnos (En desarrollo)
-- 🔄 Cargar uno o varios alumnos/grupos
-- 🔄 Subir múltiples archivos por alumno (PDF, DOCX, ZIP, TXT, JS, TS, etc.)
-- 🔄 Evaluar trabajos automáticamente con IA
+## 🔒 Seguridad
 
-### Corrección con OpenAI (En desarrollo)
-- 🔄 Integración con API de OpenAI
-- 🔄 Soporte para múltiples modelos (GPT-3.5, GPT-4, GPT-4o)
-- 🔄 Evaluación automática con notas y feedback
-- 🔄 Posibilidad de editar evaluaciones antes de guardar
+- **API Keys cifradas** en base de datos
+- **Autenticación JWT** con cookies HTTP-only
+- **Rate limiting** en endpoints críticos
+- **Validación estricta** de entrada con Zod
+- **Headers de seguridad** implementados
+- **Variables de entorno** obligatorias para producción
 
-### Reportes (En desarrollo)
-- 🔄 Generación de reportes en PDF
-- 🔄 Tabla con notas y explicaciones por alumno
+Ver [SECURITY.md](./SECURITY.md) para detalles completos.
 
-### Configuración (En desarrollo)
-- 🔄 Selección de modelo OpenAI
-- 🔄 Configuración de API Key
-- 🔄 Límites de tokens y configuración de idioma
+## 🚀 Inicio Rápido
 
-## 🛠️ Tecnologías
+### 1. Clonar el repositorio
 
-- **Frontend**: Next.js 14, React 18, TypeScript
-- **Styling**: Tailwind CSS
-- **Formularios**: React Hook Form + Zod
-- **Iconos**: Lucide React
-- **IA**: OpenAI API
-- **Almacenamiento**: LocalStorage (persistencia local)
-- **Validación**: Zod schemas
-- **Deployment**: Vercel Ready
+```bash
+git clone <repository-url>
+cd ai-evaluador
+```
 
-## 📦 Instalación
+### 2. Instalar dependencias
 
-1. **Clonar el repositorio**
-   ```bash
-   git clone <repository-url>
-   cd ai-evaluador
-   ```
+```bash
+npm install
+```
 
-2. **Instalar dependencias**
-   ```bash
-   npm install
-   ```
+### 3. Generar claves de seguridad
 
-3. **Configurar variables de entorno**
-   ```bash
-   cp .env.local.example .env.local
-   ```
-   
-   Edita `.env.local` y agrega tu API Key de OpenAI:
-   ```env
-   OPENAI_API_KEY=tu_api_key_aqui
-   OPENAI_MODEL=gpt-4o
-   NEXT_PUBLIC_APP_NAME=AI Evaluador
-   NEXT_PUBLIC_DEFAULT_LANGUAGE=es
-   NEXT_PUBLIC_MAX_FILE_SIZE=10485760
-   ```
+```bash
+npm run generate-keys
+```
 
-4. **Ejecutar en desarrollo**
-   ```bash
-   npm run dev
-   ```
+### 4. Configurar variables de entorno
 
-5. **Abrir en el navegador**
-   ```
-   http://localhost:3000
-   ```
+Copia las claves generadas al archivo `.env.local`:
 
-## 🚀 Deployment en Vercel
+```env
+# Variables de seguridad (generadas con npm run generate-keys)
+JWT_SECRET=tu-jwt-secret-generado
+ENCRYPTION_KEY=tu-encryption-key-generado
+NODE_ENV=development
 
-1. **Conectar repositorio a Vercel**
-   - Importa tu repositorio en [vercel.com](https://vercel.com)
-   - Vercel detectará automáticamente que es un proyecto Next.js
+# Configuración opcional
+OPENAI_API_KEY=tu-api-key-de-openai
+NEXT_PUBLIC_APP_NAME=AI Evaluador
+NEXT_PUBLIC_DEFAULT_LANGUAGE=es
+```
 
-2. **Configurar variables de entorno**
-   - En el dashboard de Vercel, ve a Settings > Environment Variables
-   - Agrega las mismas variables que tienes en `.env.local`
+### 5. Ejecutar en desarrollo
 
-3. **Deploy**
-   - Vercel desplegará automáticamente en cada push a main
-   - También puedes hacer deploy manual desde el dashboard
+```bash
+npm run dev
+```
+
+La aplicación estará disponible en [http://localhost:3000](http://localhost:3000)
 
 ## 📁 Estructura del Proyecto
 
 ```
 src/
 ├── app/                    # App Router de Next.js
-│   ├── page.tsx           # Página principal
-│   └── layout.tsx         # Layout principal
+│   ├── api/               # API Routes
+│   │   ├── auth/          # Autenticación
+│   │   └── user/          # Gestión de usuarios
+│   ├── layout.tsx         # Layout principal
+│   └── page.tsx           # Página principal
 ├── components/            # Componentes React
-│   └── EvaluationForm.tsx # Formulario de evaluaciones
+│   ├── EvaluationForm.tsx # Formulario de evaluaciones
+│   ├── StudentForm.tsx    # Formulario de estudiantes
+│   ├── StudentsPage.tsx   # Página de gestión de estudiantes
+│   ├── SettingsForm.tsx   # Configuración de usuario
+│   └── MainPage.tsx       # Página principal de la app
+├── contexts/              # Contextos React
+│   └── AuthContext.tsx    # Contexto de autenticación
+├── hooks/                 # Custom hooks
+│   └── useTranslations.ts # Hook de internacionalización
 ├── lib/                   # Librerías y utilidades
-│   ├── openai/           # Cliente de OpenAI
-│   │   └── client.ts     # Servicio de OpenAI
-│   ├── storage.ts        # Servicio de almacenamiento
-│   └── fileUtils.ts      # Utilidades para archivos
-├── models/               # Validaciones y esquemas
-│   └── validation.ts     # Esquemas Zod
-└── types/               # Tipos TypeScript
-    └── index.ts         # Definiciones de tipos
+│   ├── auth.ts            # Utilidades de autenticación
+│   ├── database.ts        # Gestión de base de datos
+│   ├── storage.ts         # Almacenamiento local
+│   ├── fileUtils.ts       # Utilidades de archivos
+│   ├── i18n.ts            # Internacionalización
+│   └── openai/            # Integración con OpenAI
+├── models/                # Modelos y validaciones
+│   └── validation.ts      # Schemas de Zod
+└── types/                 # Definiciones de TypeScript
+    └── index.ts
 ```
 
-## 🎯 Uso
+## 🛠️ Tecnologías
 
-### 1. Crear una Evaluación
-1. Haz clic en "Nueva Evaluación"
-2. Completa el formulario:
-   - **Nombre**: Ej. "Aplicación 1 - React"
-   - **Descripción**: (Opcional) Breve descripción
-   - **Consigna**: Instrucciones completas del trabajo
-   - **Rúbrica**: Criterios de evaluación detallados
-3. Guarda la evaluación
+- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, SQLite (dev) / PostgreSQL (prod)
+- **Autenticación**: JWT, bcrypt, HTTP-only cookies
+- **Validación**: Zod
+- **AI**: OpenAI API
+- **Base de datos**: sqlite3 (desarrollo), PostgreSQL (producción)
+- **UI**: Lucide React Icons, React Hook Form
 
-### 2. Gestionar Evaluaciones
-- **Editar**: Haz clic en el ícono de configuración
-- **Eliminar**: Haz clic en la "×" (eliminará también estudiantes y resultados)
-- **Ver detalles**: Cada tarjeta muestra fecha de creación y actualización
+## 🌍 Deployment en Vercel
 
-### 3. Próximos pasos (En desarrollo)
-- Agregar estudiantes a una evaluación
-- Subir archivos de trabajos
-- Ejecutar evaluación automática con IA
-- Revisar y editar resultados
-- Generar reportes en PDF
+### 1. Preparar variables de entorno
 
-## 🔧 Configuración de OpenAI
+```bash
+# Generar claves de producción
+npm run generate-keys
+```
 
-Para usar las funciones de evaluación automática:
+### 2. Configurar Vercel
 
-1. **Obtener API Key**
-   - Regístrate en [OpenAI](https://platform.openai.com)
-   - Genera una API Key en tu dashboard
-   - Agrega créditos a tu cuenta
+En tu dashboard de Vercel, añade las siguientes variables de entorno:
 
-2. **Configurar en la app**
-   - Agrega tu API Key en `.env.local`
-   - Selecciona el modelo deseado (gpt-3.5-turbo, gpt-4, gpt-4o)
+```env
+JWT_SECRET=tu-jwt-secret-de-64-caracteres
+ENCRYPTION_KEY=tu-encryption-key-de-64-caracteres
+NODE_ENV=production
+DATABASE_URL=postgresql://user:pass@host:port/database
+```
 
-## 📝 Tipos de Archivo Soportados
+### 3. Configurar PostgreSQL
 
-- **Documentos**: PDF, DOCX, DOC, TXT
-- **Código**: JS, TS, JSX, TSX, JSON, HTML, CSS
-- **Comprimidos**: ZIP
-- **Límite de tamaño**: 10MB por archivo
+Opciones recomendadas:
+- **Vercel Postgres** (recomendado)
+- **Supabase** (PostgreSQL managed)
+- **PlanetScale** (MySQL serverless)
+- **Railway** (PostgreSQL)
+
+### 4. Deploy
+
+```bash
+# Via Vercel CLI
+vercel --prod
+
+# O conecta tu repositorio en vercel.com
+```
+
+⚠️ **Importante**: SQLite no funciona en Vercel. Debes usar PostgreSQL para producción.
+
+## 📝 Uso
+
+### 1. Crear cuenta
+
+- Regístrate con usuario, email y contraseña
+- El sistema creará configuraciones por defecto
+
+### 2. Configurar OpenAI
+
+- Ve a Configuración
+- Añade tu API Key de OpenAI
+- Selecciona el modelo deseado (GPT-3.5, GPT-4, GPT-4o)
+
+### 3. Crear evaluación
+
+- Crea una nueva evaluación
+- Define el prompt del trabajo
+- Establece la rúbrica de evaluación
+- Opcionalmente sube archivos de apoyo
+
+### 4. Añadir estudiantes
+
+- Añade estudiantes individual o grupalmente
+- Sube sus archivos de trabajo
+- Soporta múltiples formatos
+
+### 5. Evaluar con IA
+
+- Selecciona estudiantes a evaluar
+- Ejecuta evaluación automática
+- Revisa resultados y retroalimentación
+- Genera reportes en PDF
+
+## 📄 Archivos de Ejemplo
+
+En la carpeta `ejemplo-evaluacion/` encontrarás:
+
+- **consigna.md**: Ejemplo de prompt de evaluación
+- **rubrica.md**: Ejemplo de rúbrica detallada
+- **solucion-estudiante/**: Solución de calidad alta (nota 6.5-7.0)
+- **solucion-estudiante-nota4/**: Solución media (nota 3.5-4.5)
+- **solucion-estudiante-nota1/**: Solución baja (nota 1.0-2.0)
 
 ## 🤝 Contribuir
 
 1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+2. Crea una rama feature (`git checkout -b feature/AmazingFeature`)
 3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-## 📄 Licencia
+## 📜 Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
 
 ## 🆘 Soporte
 
-Si tienes problemas o preguntas:
+- 📖 **Documentación**: Ver archivos de ejemplo y SECURITY.md
+- 🐛 **Bugs**: Abrir un issue en GitHub
+- 💡 **Features**: Abrir un issue con la etiqueta "enhancement"
+- 🔒 **Seguridad**: Ver SECURITY.md para reportar vulnerabilidades
 
-1. Revisa la documentación
-2. Busca en los issues existentes
-3. Crea un nuevo issue con detalles del problema
+## 🎯 Roadmap
 
-## 🔮 Roadmap
-
-- [ ] **Gestión de Estudiantes**: Formulario para agregar estudiantes y archivos
-- [ ] **Evaluación con IA**: Integración completa con OpenAI
-- [ ] **Editor de Resultados**: Interfaz para editar evaluaciones de IA
-- [ ] **Generación de Reportes**: Exportar resultados a PDF
-- [ ] **Configuración Avanzada**: Panel de settings completo
-- [ ] **Autenticación**: Login de profesores
-- [ ] **Dashboard Analytics**: Gráficos y estadísticas
-- [ ] **Internacionalización**: Soporte completo para inglés/español
-- [ ] **Base de Datos**: Migración de localStorage a BD real
-- [ ] **API REST**: Endpoints para integración externa
+- [ ] Integración con más modelos de IA (Anthropic Claude, Google Gemini)
+- [ ] Sistema de plantillas de evaluación
+- [ ] Analytics y métricas de rendimiento
+- [ ] Integración con LMS (Moodle, Canvas)
+- [ ] API pública para integraciones
+- [ ] Modo offline para evaluaciones básicas
