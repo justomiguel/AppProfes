@@ -74,7 +74,7 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
       const studentData: Student = {
         id: student?.id || StorageService.generateId(),
         name: name.trim(),
-        group: isGroup ? groupName.trim() : undefined,
+        group: isGroup ? name.trim() : undefined,
         groupMembers: isGroup ? groupMembers.filter(member => member.trim() !== '') : undefined,
         evaluationId,
         files: uploadedFiles,

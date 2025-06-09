@@ -1,0 +1,280 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "download": "Download",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back",
+    "add": "Add",
+    "retry": "Retry",
+    "pause": "Pause",
+    "resume": "Resume",
+    "reset": "Reset",
+    "clear": "Clear"
+  },
+  "navigation": {
+    "evaluations": "Evaluations",
+    "settings": "Settings",
+    "students": "Students",
+    "reports": "Reports"
+  },
+  "evaluations": {
+    "title": "Evaluations",
+    "create": "Create Evaluation",
+    "edit": "Edit Evaluation",
+    "update": "Update",
+    "name": "Evaluation Name",
+    "namePlaceholder": "E.g.: Application 1 - React",
+    "description": "Description",
+    "descriptionPlaceholder": "Brief evaluation description",
+    "validation": {
+      "promptRequired": "You must provide assignment text or upload assignment files",
+      "rubricRequired": "You must provide rubric text or upload rubric files"
+    },
+    "prompt": {
+      "title": "Assignment Prompt",
+      "text": "Prompt (Text)",
+      "placeholder": "Describe here the complete assignment that students must complete...",
+      "note": "* Required if no assignment files are uploaded",
+      "files": "Assignment Files",
+      "filesDescription": "As an alternative or complement to the assignment text"
+    },
+    "rubric": {
+      "title": "Evaluation Rubric",
+      "text": "Rubric (Text)",
+      "placeholder": "Define here the evaluation criteria, grading scales, and what aspects to consider for each grade...",
+      "note": "* Required if no rubric files are uploaded",
+      "files": "Rubric Files",
+      "filesDescription": "As an alternative or complement to the rubric text"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Configure your OpenAI API and preferences",
+    "saving": "Saving...",
+    "saved": "Settings saved successfully",
+    "provider": {
+      "title": "Language Model Provider",
+      "subtitle": "Select your AI provider",
+      "openai": {
+        "title": "OpenAI (External)",
+        "description": "Requires API Key. More powerful models."
+      },
+      "local": {
+        "title": "Local Model",
+        "description": "No API Key needed. Runs in your browser."
+      }
+    },
+    "openai": {
+      "title": "OpenAI Configuration",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "sk-...",
+      "model": "Model",
+      "maxTokens": "Max Tokens",
+      "temperature": "Temperature"
+    },
+    "local": {
+      "title": "Local Model Configuration",
+      "info": {
+        "title": "Locally executed model",
+        "description": "The model is downloaded and runs directly in your browser. No data is sent to external servers."
+      },
+      "model": "Model",
+      "maxTokens": "Max Tokens",
+      "temperature": "Temperature"
+    },
+    "modelManagement": {
+      "title": "Downloaded Model Management",
+      "storageUsed": "Storage used",
+      "clearAll": "Clear All",
+      "clearAllConfirm": "Are you sure you want to clear all model data? This will remove all states and downloads.",
+      "initializing": "Initializing model management...",
+      "status": {
+        "notDownloaded": "Not downloaded",
+        "downloading": "Downloading...",
+        "downloaded": "Downloaded",
+        "error": "Error",
+        "paused": "Paused"
+      },
+      "actions": {
+        "download": "Download",
+        "pause": "Pause",
+        "resume": "Resume",
+        "retry": "Retry",
+        "delete": "Delete",
+        "reset": "Reset status"
+      },
+      "confirmDelete": "Are you sure you want to delete the model {modelName}?",
+      "confirmReset": "Do you want to reset the status of model {modelName}?",
+      "downloadSuccess": "Model {modelName} downloaded successfully",
+      "deleteSuccess": "Model {modelName} deleted successfully",
+      "resetSuccess": "Model status reset",
+      "downloadError": "Error downloading model: {error}",
+      "deleteError": "Error deleting model: {error}",
+      "serviceUnavailable": "Local model service unavailable",
+      "allDataCleared": "All data has been cleared"
+    },
+    "general": {
+      "title": "General Settings",
+      "language": "Language",
+      "gradeMin": "Minimum Grade",
+      "gradeMax": "Maximum Grade",
+      "spanish": "Español",
+      "english": "English"
+    },
+    "customPrompts": {
+      "title": "Custom Prompts",
+      "useCustom": "Use custom prompts",
+      "globalInfo": "You are currently using the system global prompts. Enable custom prompts to create your own configuration.",
+      "loadGlobalBase": "Load global prompts as base",
+      "resetToGlobal": "Reset to Global",
+      "resetConfirm": "Are you sure you want to restore prompts to global configuration? This will overwrite your custom prompts.",
+      "loadGlobalConfirm": "Do you want to load global prompts as base for your custom configuration?",
+      "systemPrompt": {
+        "title": "System Prompt",
+        "description": "Define the main behavior of the AI evaluator",
+        "placeholder": "Enter your custom system prompt..."
+      },
+      "evaluationPrefix": {
+        "title": "Evaluation Prefix",
+        "description": "Text added at the beginning of each evaluation",
+        "placeholder": "Enter your custom evaluation prefix..."
+      },
+      "gradingCriteria": {
+        "title": "Grading Criteria",
+        "description": "Specific criteria for evaluation",
+        "placeholder": "Enter your custom grading criteria..."
+      }
+    }
+  },
+  "students": {
+    "title": "Students",
+    "subtitle": "Manage students for this evaluation",
+    "addStudent": "Add Student",
+    "evaluateAll": "Evaluate All",
+    "evaluating": "Evaluating...",
+    "noStudents": {
+      "title": "No students",
+      "description": "Start by adding students to this evaluation."
+    },
+    "stats": {
+      "total": "Total Students",
+      "evaluated": "Evaluated",
+      "pending": "Pending"
+    },
+    "evaluate": "Evaluate",
+    "reevaluate": "Re-evaluate",
+    "reevaluating": "Re-evaluating...",
+    "evaluated": "Evaluated",
+    "group": "Group",
+    "members": "Members",
+    "files": "file(s)",
+    "noFiles": "No files",
+    "grade": "Grade",
+    "explanation": "Explanation",
+    "feedback": "Feedback",
+    "model": "Model",
+    "evaluationComplete": "Evaluation completed for {studentName}",
+    "reevaluationComplete": "Re-evaluation completed for {studentName}",
+    "evaluationError": "Error evaluating {studentName}: {error}",
+    "deleteConfirm": "Are you sure you want to delete this student? Their result will also be deleted if it exists.",
+    "allEvaluated": "All students have already been evaluated.",
+    "evaluateAllConfirm": "Automatically evaluate {count} student(s)?",
+    "batchEvaluationComplete": "Batch evaluation completed. Review the results.",
+    "batchEvaluationError": "Error in batch evaluation",
+    "fileView": {
+      "title": "View content of {fileName}",
+      "noContent": "No content available for this file.",
+      "binaryFile": "This file is binary and cannot be displayed as text.",
+      "type": "Type",
+      "size": "Size"
+    },
+    "modelDownload": {
+      "notDownloaded": "Model {modelName} is not downloaded.",
+      "downloadPrompt": "Do you want to download it now? (Size: {size})",
+      "downloadNote": "Note: Download may take several minutes depending on your connection.",
+      "downloadStarting": "Starting download...",
+      "downloadSuccess": "Model downloaded successfully",
+      "downloadError": "Error downloading model: {error}",
+      "initializingModel": "Initializing local model...",
+      "initializingBatch": "Initializing local model for batch evaluation...",
+      "loadingModel": "Loading model into memory...",
+      "modelReady": "Model loaded and ready to use"
+    }
+  },
+  "reports": {
+    "title": "PDF Report Generation",
+    "description": "Download professional reports with tables and styles",
+    "courseReport": "Course Report (PDF)",
+    "studentReport": "PDF",
+    "noEvaluated": "This student has not been evaluated yet.",
+    "noResults": "No evaluated students to generate the report."
+  },
+  "models": {
+    "openai": {
+      "gpt35": {
+        "description": "Fast and efficient model for general tasks"
+      },
+      "gpt4": {
+        "description": "More powerful model for complex tasks"
+      },
+      "gpt4o": {
+        "description": "Latest optimized OpenAI model"
+      }
+    },
+    "local": {
+      "tinyllama": {
+        "name": "TinyLlama 1.1B Chat",
+        "description": "Compact conversational model (600MB)"
+      },
+      "distilgpt2": {
+        "name": "DistilGPT2",
+        "description": "Small and fast generative model (400MB)"
+      },
+      "gpt2": {
+        "name": "GPT-2",
+        "description": "Classic OpenAI generative model (500MB)"
+      }
+    }
+  },
+  "auth": {
+    "notAuthenticated": "User not authenticated",
+    "configurationUnavailable": "Configuration unavailable",
+    "apiKeyNotConfigured": "OpenAI API Key not configured"
+  },
+  "errors": {
+    "unknown": "Unknown error",
+    "loadingSettings": "Error loading settings",
+    "savingSettings": "Error saving settings",
+    "initializingModel": "Error initializing local model",
+    "evaluationError": "Error during local evaluation",
+    "downloadCancelled": "Download cancelled",
+    "downloadPaused": "Download paused by user",
+    "cannotConvertObject": "Cannot convert undefined or null to object",
+    "loadingModelStatuses": "Error loading model statuses",
+    "savingModelStatuses": "Error saving model statuses",
+    "clearingData": "Error clearing data",
+    "deletingModel": "Error deleting model",
+    "unknownModel": "Unknown model: {modelName}",
+    "modelAlreadyDownloading": "Model is already downloading",
+    "browserOnly": "This operation can only be performed in the browser"
+  },
+  "languages": {
+    "es": "Español",
+    "en": "English"
+  },
+  "fileUpload": {
+    "maxFilesError": "Maximum {maxFiles} files allowed",
+    "instruction": "Click to upload files or drag and drop",
+    "acceptedTypes": "PDF, DOCX, TXT, MD, JS, TS, HTML, CSS, ZIP, images (max. 10MB per file)",
+    "fileCount": "{current}/{max} files",
+    "uploadedFiles": "Uploaded files",
+    "removeFile": "Remove file"
+  }
+} 

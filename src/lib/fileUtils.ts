@@ -83,7 +83,6 @@ export async function processFile(file: File): Promise<StudentFile> {
       type: file.type,
       size: file.size,
       content,
-      path: file.name,
     };
   } catch (error) {
     throw new Error(`Error procesando archivo ${file.name}: ${error instanceof Error ? error.message : 'Error desconocido'}`);
@@ -151,7 +150,8 @@ function generateFileId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
-export function formatFileSize(bytes: number): string {
+export function formatFileSize(bytes: number | null | undefined): string {
+  if (bytes == null || isNaN(bytes) || bytes < 0) return '0 Bytes';
   if (bytes === 0) return '0 Bytes';
   
   const k = 1024;

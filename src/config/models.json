@@ -1,0 +1,58 @@
+{
+  "openai": {
+    "models": {
+      "gpt-3.5-turbo": {
+        "name": "GPT-3.5 Turbo",
+        "description": "models.openai.gpt35.description",
+        "maxTokens": 4096,
+        "recommended": true,
+        "default": true
+      },
+      "gpt-4": {
+        "name": "GPT-4",
+        "description": "models.openai.gpt4.description",
+        "maxTokens": 8192,
+        "recommended": false,
+        "default": false
+      },
+      "gpt-4o": {
+        "name": "GPT-4o",
+        "description": "models.openai.gpt4o.description",
+        "maxTokens": 8192,
+        "recommended": false,
+        "default": false
+      }
+    }
+  },
+  "local": {
+    "models": {
+      "Xenova/TinyLlama-1.1B-Chat-v1.0": {
+        "name": "models.local.tinyllama.name",
+        "description": "models.local.tinyllama.description",
+        "size": "~600MB",
+        "sizeBytes": 629145600,
+        "recommended": true,
+        "default": true,
+        "url": "https://huggingface.co/Xenova/TinyLlama-1.1B-Chat-v1.0"
+      },
+      "Xenova/distilgpt2": {
+        "name": "models.local.distilgpt2.name",
+        "description": "models.local.distilgpt2.description",
+        "size": "~400MB",
+        "sizeBytes": 419430400,
+        "recommended": false,
+        "default": false,
+        "url": "https://huggingface.co/Xenova/distilgpt2"
+      },
+      "Xenova/gpt2": {
+        "name": "models.local.gpt2.name",
+        "description": "models.local.gpt2.description",
+        "size": "~500MB",
+        "sizeBytes": 524288000,
+        "recommended": false,
+        "default": false,
+        "url": "https://huggingface.co/Xenova/gpt2"
+      }
+    }
+  }
+} 

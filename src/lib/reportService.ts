@@ -57,13 +57,18 @@ export class ReportService {
     doc.text(student.group ? 'Información del Grupo' : 'Información del Estudiante', 20, yPosition);
     yPosition += 10;
     
+    // Determine display name for the student/group
+    const displayName = student.group && student.groupMembers && student.groupMembers.length > 0
+      ? student.groupMembers.filter(m => m.trim()).join(', ')
+      : student.name;
+    
     const studentInfo = [
       ['Evaluación', evaluation.name],
-      [student.group ? 'Grupo' : 'Estudiante', student.name],
-      ...(student.groupMembers && student.groupMembers.length > 0 ? 
-        [['Integrantes', student.groupMembers.filter(m => m.trim()).join(', ')]] : []),
-      ['Fecha de evaluación', new Date(result.evaluatedAt).toLocaleString('es-ES')],
-      ['Calificación', result.grade.toString()],
+      [student.group ? 'Integrantes' : 'Estudiante', displayName],
+      ...(student.group && student.groupMembers && student.groupMembers.length > 0 ? 
+        [['Nombre del Grupo', student.name]] : []),
+      ['Fecha de evaluación', result.evaluatedAt ? new Date(result.evaluatedAt).toLocaleString('es-ES') : 'No disponible'],
+      ['Calificación', (result.grade || 0).toString()],
     ];
 
     autoTable(doc, {
@@ -85,7 +90,7 @@ export class ReportService {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    const gradeText = `CALIFICACIÓN: ${result.grade}`;
+    const gradeText = `CALIFICACIÓN: ${result.grade || 0}`;
     const gradeTextWidth = doc.getTextWidth(gradeText);
     doc.text(gradeText, (doc.internal.pageSize.width - gradeTextWidth) / 2, yPosition + 16);
     
@@ -100,7 +105,7 @@ export class ReportService {
     
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
-    const explanationLines = doc.splitTextToSize(result.explanation, doc.internal.pageSize.width - 40);
+    const explanationLines = doc.splitTextToSize(result.explanation || 'No hay explicación disponible', doc.internal.pageSize.width - 40);
     doc.text(explanationLines, 20, yPosition);
     yPosition += explanationLines.length * 6 + 15;
 
@@ -130,9 +135,9 @@ export class ReportService {
     yPosition += 10;
 
     const filesData = student.files.map(file => [
-      file.name,
-      file.type,
-      `${(file.size / 1024).toFixed(2)} KB`
+      file.name || 'Archivo sin nombre',
+      file.type || 'Tipo desconocido',
+      `${((file.size || 0) / 1024).toFixed(2)} KB`
     ]);
 
     autoTable(doc, {
@@ -144,36 +149,15 @@ export class ReportService {
       styles: { fontSize: 10, cellPadding: 4 }
     });
 
-    yPosition = (doc as any).lastAutoTable.finalY + 20;
-
-    // Technical Details
-    if (yPosition > doc.internal.pageSize.height - 60) {
-      doc.addPage();
-      yPosition = 30;
-    }
-
-    const technicalInfo = [
-      ['Modelo de IA', result.aiModel],
-      ['Versión de evaluación', result.evaluationVersion.toString()],
-      ['Usuario evaluador', result.userId],
-      ['Fecha de generación', new Date().toLocaleString('es-ES')]
-    ];
-
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Detalles Técnicos', '']],
-      body: technicalInfo,
-      theme: 'plain',
-      headStyles: { fillColor: [96, 125, 139], textColor: 255, fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 3 },
-      columnStyles: { 0: { fontStyle: 'bold' } }
-    });
-
     // Add footer
     this.addFooter(doc);
 
-    // Download
-    const filename = `reporte_${student.name.replace(/\s+/g, '_')}_${evaluation.name.replace(/\s+/g, '_')}.pdf`;
+    // Download - use display name for filename
+    const filenameName = student.group && student.groupMembers && student.groupMembers.length > 0
+      ? student.groupMembers.filter(m => m.trim()).join('_').replace(/\s+/g, '_')
+      : student.name.replace(/\s+/g, '_');
+    
+    const filename = `reporte_${filenameName}_${evaluation.name.replace(/\s+/g, '_')}.pdf`;
     doc.save(filename);
   }
 
@@ -220,7 +204,7 @@ export class ReportService {
 
     // Statistics (only if there are evaluated students)
     if (results.length > 0) {
-      const grades = results.map(r => r.grade);
+      const grades = results.map(r => r.grade || 0).filter(grade => grade !== null && grade !== undefined);
       const average = grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
       const maxGrade = Math.max(...grades);
       const minGrade = Math.min(...grades);
@@ -283,12 +267,34 @@ export class ReportService {
 
     const studentData = students.map(student => {
       const result = results.find(r => r.studentId === student.id);
+      
+      // Debug: Let's see what we actually have
+      console.log('Student data:', {
+        name: student.name,
+        group: student.group,
+        groupMembers: student.groupMembers,
+        isGroup: !!student.group
+      });
+      
+      let firstColumn, secondColumn;
+      
+      if (student.group) {
+        // It's a group
+        firstColumn = student.name; // Group name
+        secondColumn = student.groupMembers && student.groupMembers.length > 0 
+          ? student.groupMembers.filter(m => m.trim()).join(', ')
+          : 'Sin integrantes especificados';
+      } else {
+        // It's an individual student
+        firstColumn = student.name; // Student name
+        secondColumn = 'N/A';
+      }
+      
       return [
-        student.group ? `${student.name} (Grupo)` : student.name,
-        student.groupMembers && student.groupMembers.length > 0 ? 
-          student.groupMembers.filter(m => m.trim()).join(', ') : 'N/A',
-        result ? result.grade.toString() : 'Pendiente',
-        result ? new Date(result.evaluatedAt).toLocaleDateString('es-ES') : 'N/A'
+        firstColumn,
+        secondColumn,
+        result ? (result.grade || 0).toString() : 'Pendiente',
+        result && result.evaluatedAt ? new Date(result.evaluatedAt).toLocaleDateString('es-ES') : 'N/A'
       ];
     });
 

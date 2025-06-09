@@ -1,0 +1,290 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "download": "Descargar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "confirm": "Confirmar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "add": "Agregar",
+    "retry": "Reintentar",
+    "pause": "Pausar",
+    "resume": "Reanudar",
+    "reset": "Reiniciar",
+    "clear": "Limpiar"
+  },
+  "navigation": {
+    "evaluations": "Evaluaciones",
+    "settings": "Configuración",
+    "students": "Estudiantes",
+    "reports": "Reportes"
+  },
+  "evaluations": {
+    "title": "Evaluaciones",
+    "create": "Crear Evaluación",
+    "edit": "Editar Evaluación",
+    "update": "Actualizar",
+    "name": "Nombre de la Evaluación",
+    "namePlaceholder": "Ej: Aplicación 1 - React",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Breve descripción de la evaluación",
+    "validation": {
+      "promptRequired": "Debes proporcionar una consigna en texto o subir archivos de consigna",
+      "rubricRequired": "Debes proporcionar una rúbrica en texto o subir archivos de rúbrica"
+    },
+    "prompt": {
+      "title": "Consigna del Trabajo",
+      "text": "Consigna (Texto)",
+      "placeholder": "Describe aquí la consigna completa del trabajo que deben realizar los estudiantes...",
+      "note": "* Requerido si no subes archivos de consigna",
+      "files": "Archivos de Consigna",
+      "filesDescription": "Como alternativa o complemento al texto de la consigna"
+    },
+    "rubric": {
+      "title": "Rúbrica de Evaluación",
+      "text": "Rúbrica (Texto)",
+      "placeholder": "Define aquí los criterios de evaluación, escalas de calificación, y qué aspectos considerar para cada nota...",
+      "note": "* Requerido si no subes archivos de rúbrica",
+      "files": "Archivos de Rúbrica",
+      "filesDescription": "Como alternativa o complemento al texto de la rúbrica"
+    }
+  },
+  "settings": {
+    "title": "Configuración",
+    "subtitle": "Configura tu API de OpenAI y preferencias",
+    "saving": "Guardando...",
+    "saved": "Configuración guardada exitosamente",
+    "provider": {
+      "title": "Proveedor de Modelo de Lenguaje",
+      "subtitle": "Selecciona tu proveedor de IA",
+      "openai": {
+        "title": "OpenAI (Externo)",
+        "description": "Requiere API Key. Modelos más potentes."
+      },
+      "local": {
+        "title": "Modelo Local",
+        "description": "Sin API Key. Ejecuta en tu navegador."
+      }
+    },
+    "openai": {
+      "title": "Configuración de OpenAI",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "sk-...",
+      "model": "Modelo",
+      "maxTokens": "Max Tokens",
+      "temperature": "Temperature"
+    },
+    "local": {
+      "title": "Configuración de Modelo Local",
+      "info": {
+        "title": "Modelo ejecutado localmente",
+        "description": "El modelo se descarga y ejecuta directamente en tu navegador. No se envían datos a servidores externos."
+      },
+      "model": "Modelo",
+      "maxTokens": "Max Tokens",
+      "temperature": "Temperature"
+    },
+    "modelManagement": {
+      "title": "Gestión de Modelos Descargados",
+      "storageUsed": "Almacenamiento usado",
+      "clearAll": "Limpiar Todo",
+      "clearAllConfirm": "¿Estás seguro de que quieres limpiar todos los datos de modelos? Esto eliminará todos los estados y descargas.",
+      "initializing": "Inicializando gestión de modelos...",
+      "folderSelected": "Carpeta seleccionada: {folder}",
+      "folderManagement": {
+        "title": "Ubicación de Modelos",
+        "changeLocation": "Cambiar Ubicación",
+        "currentFolder": "Carpeta de descarga actual:",
+        "folderStructure": "Estructura de carpetas:",
+        "downloaded": "(descargado)",
+        "organizationNote": "Los modelos se organizan en subcarpetas por nombre de modelo dentro de esta ubicación.",
+        "storageNote": "Los modelos se almacenan en el navegador usando IndexedDB. La \"carpeta\" es una referencia organizacional y no afecta el almacenamiento real."
+      },
+      "status": {
+        "notDownloaded": "No descargado",
+        "downloading": "Descargando...",
+        "downloaded": "Descargado",
+        "error": "Error",
+        "paused": "Pausado"
+      },
+      "actions": {
+        "download": "Descargar",
+        "pause": "Pausar",
+        "resume": "Reanudar",
+        "retry": "Reintentar",
+        "delete": "Eliminar",
+        "reset": "Reiniciar estado"
+      },
+      "confirmDelete": "¿Estás seguro de que quieres eliminar el modelo {modelName}?",
+      "confirmReset": "¿Quieres reiniciar el estado del modelo {modelName}?",
+      "downloadSuccess": "Modelo {modelName} descargado exitosamente",
+      "deleteSuccess": "Modelo {modelName} eliminado exitosamente",
+      "resetSuccess": "Estado del modelo reiniciado",
+      "downloadError": "Error descargando modelo: {error}",
+      "deleteError": "Error eliminando modelo: {error}",
+      "serviceUnavailable": "Servicio de modelo local no disponible",
+      "allDataCleared": "Todos los datos han sido limpiados"
+    },
+    "general": {
+      "title": "Configuración General",
+      "language": "Idioma",
+      "gradeMin": "Nota Mínima",
+      "gradeMax": "Nota Máxima",
+      "spanish": "Español",
+      "english": "English"
+    },
+    "customPrompts": {
+      "title": "Prompts Personalizados",
+      "useCustom": "Usar prompts personalizados",
+      "globalInfo": "Actualmente estás usando los prompts globales del sistema. Activa los prompts personalizados para crear tu propia configuración.",
+      "loadGlobalBase": "Cargar prompts globales como base",
+      "resetToGlobal": "Restaurar a Global",
+      "resetConfirm": "¿Estás seguro de que quieres restaurar los prompts a la configuración global? Esto sobrescribirá tus prompts personalizados.",
+      "loadGlobalConfirm": "¿Quieres cargar los prompts globales como base para tu configuración personalizada?",
+      "systemPrompt": {
+        "title": "Prompt del Sistema",
+        "description": "Define el comportamiento principal del evaluador de IA",
+        "placeholder": "Ingresa tu prompt del sistema personalizado..."
+      },
+      "evaluationPrefix": {
+        "title": "Prefijo de Evaluación",
+        "description": "Texto que se añade al inicio de cada evaluación",
+        "placeholder": "Ingresa tu prefijo de evaluación personalizado..."
+      },
+      "gradingCriteria": {
+        "title": "Criterios de Calificación",
+        "description": "Criterios específicos para la evaluación",
+        "placeholder": "Ingresa tus criterios de calificación personalizados..."
+      }
+    }
+  },
+  "students": {
+    "title": "Estudiantes",
+    "subtitle": "Gestiona los estudiantes de esta evaluación",
+    "addStudent": "Agregar Estudiante",
+    "evaluateAll": "Evaluar Todos",
+    "evaluating": "Evaluando...",
+    "noStudents": {
+      "title": "No hay estudiantes",
+      "description": "Comienza agregando estudiantes a esta evaluación."
+    },
+    "stats": {
+      "total": "Total Estudiantes",
+      "evaluated": "Evaluados",
+      "pending": "Pendientes"
+    },
+    "evaluate": "Evaluar",
+    "reevaluate": "Re-evaluar",
+    "reevaluating": "Re-evaluando...",
+    "evaluated": "Evaluado",
+    "group": "Grupo",
+    "members": "Integrantes",
+    "files": "archivo(s)",
+    "noFiles": "No hay archivos",
+    "grade": "Calificación",
+    "explanation": "Explicación",
+    "feedback": "Feedback",
+    "model": "Modelo",
+    "evaluationComplete": "Evaluación completada para {studentName}",
+    "reevaluationComplete": "Re-evaluación completada para {studentName}",
+    "evaluationError": "Error al evaluar a {studentName}: {error}",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar este estudiante? Se eliminará también su resultado si existe.",
+    "allEvaluated": "Todos los estudiantes ya han sido evaluados.",
+    "evaluateAllConfirm": "¿Evaluar automáticamente a {count} estudiante(s)?",
+    "batchEvaluationComplete": "Evaluación masiva completada. Revisa los resultados.",
+    "batchEvaluationError": "Error en la evaluación masiva",
+    "fileView": {
+      "title": "Ver contenido de {fileName}",
+      "noContent": "No hay contenido disponible para este archivo.",
+      "binaryFile": "Este archivo es binario y no se puede mostrar como texto.",
+      "type": "Tipo",
+      "size": "Tamaño"
+    },
+    "modelDownload": {
+      "notDownloaded": "El modelo {modelName} no está descargado.",
+      "downloadPrompt": "¿Quieres descargarlo ahora? (Tamaño: {size})",
+      "downloadNote": "Nota: La descarga puede tomar varios minutos dependiendo de tu conexión.",
+      "downloadStarting": "Iniciando descarga...",
+      "downloadSuccess": "Modelo descargado exitosamente",
+      "downloadError": "Error descargando modelo: {error}",
+      "initializingModel": "Iniciando modelo local...",
+      "initializingBatch": "Iniciando modelo local para evaluación masiva...",
+      "loadingModel": "Cargando modelo en memoria...",
+      "modelReady": "Modelo cargado y listo para usar"
+    }
+  },
+  "reports": {
+    "title": "Generación de Reportes PDF",
+    "description": "Descarga reportes profesionales con tablas y estilos",
+    "courseReport": "Reporte del Curso (PDF)",
+    "studentReport": "PDF",
+    "noEvaluated": "Este estudiante no ha sido evaluado aún.",
+    "noResults": "No hay estudiantes evaluados para generar el reporte."
+  },
+  "models": {
+    "openai": {
+      "gpt35": {
+        "description": "Modelo rápido y eficiente para tareas generales"
+      },
+      "gpt4": {
+        "description": "Modelo más potente para tareas complejas"
+      },
+      "gpt4o": {
+        "description": "Último modelo optimizado de OpenAI"
+      }
+    },
+    "local": {
+      "tinyllama": {
+        "name": "TinyLlama 1.1B Chat",
+        "description": "Modelo compacto de conversación (600MB)"
+      },
+      "distilgpt2": {
+        "name": "DistilGPT2",
+        "description": "Modelo generativo pequeño y rápido (400MB)"
+      },
+      "gpt2": {
+        "name": "GPT-2",
+        "description": "Modelo generativo clásico de OpenAI (500MB)"
+      }
+    }
+  },
+  "auth": {
+    "notAuthenticated": "Usuario no autenticado",
+    "configurationUnavailable": "Configuración no disponible",
+    "apiKeyNotConfigured": "API Key de OpenAI no configurada"
+  },
+  "errors": {
+    "unknown": "Error desconocido",
+    "loadingSettings": "Error cargando configuración",
+    "savingSettings": "Error guardando configuración",
+    "initializingModel": "Error al inicializar modelo local",
+    "evaluationError": "Error durante la evaluación local",
+    "downloadCancelled": "Descarga cancelada",
+    "downloadPaused": "Download paused by user",
+    "cannotConvertObject": "No se puede convertir objeto undefined o null",
+    "loadingModelStatuses": "Error cargando estados de modelos",
+    "savingModelStatuses": "Error guardando estados de modelos",
+    "clearingData": "Error limpiando datos",
+    "deletingModel": "Error eliminando modelo",
+    "unknownModel": "Modelo desconocido: {modelName}",
+    "modelAlreadyDownloading": "El modelo ya se está descargando",
+    "browserOnly": "Esta operación solo se puede realizar en el navegador"
+  },
+  "languages": {
+    "es": "Español",
+    "en": "English"
+  },
+  "fileUpload": {
+    "maxFilesError": "Máximo {maxFiles} archivos permitidos",
+    "instruction": "Haz clic para subir archivos o arrastra y suelta",
+    "acceptedTypes": "PDF, DOCX, TXT, MD, JS, TS, HTML, CSS, ZIP, imágenes (máx. 10MB por archivo)",
+    "fileCount": "{current}/{max} archivos",
+    "uploadedFiles": "Archivos subidos",
+    "removeFile": "Eliminar archivo"
+  }
+} 

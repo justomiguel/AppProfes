@@ -33,9 +33,7 @@ export default function FileUpload({
     if (!selectedFiles || selectedFiles.length === 0) return;
 
     if (files.length + selectedFiles.length > maxFiles) {
-      alert(t.language === 'es' 
-        ? `Máximo ${maxFiles} archivos permitidos` 
-        : `Maximum ${maxFiles} files allowed`);
+      alert(t('fileUpload.maxFilesError', { maxFiles: maxFiles.toString() }));
       return;
     }
 
@@ -48,13 +46,13 @@ export default function FileUpload({
         type: file.type,
         size: file.size,
         content: file.content,
-        uploadedAt: new Date(),
+        uploadedAt: new Date().toISOString(),
         category: category
       }));
       
       onFilesChange([...files, ...evaluationFiles]);
     } catch (error) {
-      alert(error instanceof Error ? error.message : `${t.error}: ${error}`);
+      alert(error instanceof Error ? error.message : `${t('common.error')}: ${error}`);
     } finally {
       setIsLoading(false);
       event.target.value = '';
@@ -89,22 +87,16 @@ export default function FileUpload({
           <Upload className="mx-auto h-8 w-8 text-gray-400" />
           <p className="mt-2 text-sm text-gray-600">
             {isLoading 
-              ? t.loading
-              : (t.language === 'es' 
-                ? 'Haz clic para subir archivos o arrastra y suelta' 
-                : 'Click to upload files or drag and drop')
+              ? t('common.loading')
+              : t('fileUpload.instruction')
             }
           </p>
           <p className="text-xs text-gray-500">
-            {t.language === 'es' 
-              ? `PDF, DOCX, TXT, MD, JS, TS, HTML, CSS, ZIP, imágenes (máx. 10MB por archivo)` 
-              : `PDF, DOCX, TXT, MD, JS, TS, HTML, CSS, ZIP, images (max. 10MB per file)`}
+            {t('fileUpload.acceptedTypes')}
           </p>
           {maxFiles > 1 && (
             <p className="text-xs text-gray-500 mt-1">
-              {t.language === 'es' 
-                ? `${files.length}/${maxFiles} archivos` 
-                : `${files.length}/${maxFiles} files`}
+              {t('fileUpload.fileCount', { current: files.length.toString(), max: maxFiles.toString() })}
             </p>
           )}
         </label>
@@ -114,7 +106,7 @@ export default function FileUpload({
       {files.length > 0 && (
         <div className="mt-4 space-y-2">
           <h4 className="text-sm font-medium text-gray-700">
-            {t.uploadedFiles}:
+            {t('fileUpload.uploadedFiles')}:
           </h4>
           {files.map((file) => (
             <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
@@ -123,7 +115,7 @@ export default function FileUpload({
                 <div>
                   <p className="text-sm font-medium text-gray-900">{file.name}</p>
                   <p className="text-xs text-gray-500">
-                    {formatFileSize(file.size)} • {new Date(file.uploadedAt).toLocaleDateString()}
+                    {formatFileSize(file.size)}
                   </p>
                 </div>
               </div>
@@ -131,7 +123,7 @@ export default function FileUpload({
                 type="button"
                 onClick={() => removeFile(file.id)}
                 className="text-red-600 hover:text-red-800"
-                title={t.removeFile}
+                title={t('fileUpload.removeFile')}
               >
                 <X className="h-4 w-4" />
               </button>

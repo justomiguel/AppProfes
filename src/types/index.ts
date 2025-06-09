@@ -77,6 +77,8 @@ export interface EvaluationFile {
   content: string;
   type: string;
   size: number;
+  uploadedAt?: string;
+  category?: 'prompt' | 'rubric';
 }
 
 export interface User {
