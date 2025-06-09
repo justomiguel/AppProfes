@@ -13,7 +13,14 @@ import { Evaluation, Student } from '../types';
 import { StorageService } from '../lib/storage';
 import { useTranslations } from '../hooks/useTranslations';
 
-type CurrentView = 'evaluations' | 'students' | 'settings' | 'evaluation-form' | 'student-form' | 'admin-users' | 'global-settings';
+type CurrentView = 
+  | 'evaluations' 
+  | 'students' 
+  | 'settings' 
+  | 'evaluation-form' 
+  | 'student-form' 
+  | 'admin-users' 
+  | 'global-settings';
 
 export default function MainPage() {
   const { user, logout, isLoading, isAdmin } = useAuth();
@@ -40,7 +47,7 @@ export default function MainPage() {
   };
 
   const handleDeleteEvaluation = (id: string) => {
-    if (confirm(t.deleteEvaluationConfirm)) {
+    if (confirm('¿Estás seguro de que quieres eliminar esta evaluación? Se eliminarán también todos los estudiantes y resultados asociados.')) {
       StorageService.deleteEvaluation(id);
       setEvaluations(StorageService.getEvaluations());
     }
@@ -155,7 +162,7 @@ export default function MainPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 sm:py-6 space-y-4 sm:space-y-0">
             <div className="flex items-center">
               <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 mr-2 sm:mr-3" />
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t.appTitle}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">AI Evaluador</h1>
               {isAdmin && (
                 <span className="ml-2 sm:ml-3 inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                   <Shield className="h-3 w-3 mr-1" />
@@ -180,20 +187,20 @@ export default function MainPage() {
                   }`}
                 >
                   <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">{t.evaluations}</span>
+                  <span className="hidden sm:inline">{t('navigation.evaluations')}</span>
                   <span className="sm:hidden">Eval</span>
                 </button>
                 
                 <button 
                   onClick={() => setCurrentView('settings')}
                   className={`flex items-center px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-md ${
-                    currentView === 'settings' 
+                    (currentView as string) === 'settings' 
                       ? 'text-blue-600 bg-blue-50' 
                       : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                   }`}
                 >
                   <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">{t.settings}</span>
+                  <span className="hidden sm:inline">{t('navigation.settings')}</span>
                   <span className="sm:hidden">Config</span>
                 </button>
 
@@ -245,9 +252,9 @@ export default function MainPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">{t.evaluationsTitle}</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">{t('evaluations.title')}</h2>
             <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">
-              {t.evaluationsSubtitle}
+              Gestiona tus evaluaciones y corrige automáticamente con IA
             </p>
           </div>
           <button
@@ -255,7 +262,7 @@ export default function MainPage() {
             className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <Plus className="h-4 w-4 mr-2" />
-            {t.newEvaluation}
+            {t('evaluations.create')}
           </button>
         </div>
 
@@ -263,7 +270,7 @@ export default function MainPage() {
         {evaluations.length === 0 ? (
           <div className="text-center py-12">
             <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">{t.noEvaluations}</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No hay evaluaciones</h3>
             <p className="mt-1 text-sm text-gray-500">Comienza creando tu primera evaluación</p>
             <div className="mt-6">
               <button
@@ -271,7 +278,7 @@ export default function MainPage() {
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                {t.newEvaluation}
+                {t('evaluations.create')}
               </button>
             </div>
           </div>

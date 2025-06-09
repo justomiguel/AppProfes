@@ -455,11 +455,11 @@ export default function SettingsForm({ onSave, onCancel }: SettingsFormProps) {
       setSuccessMessage(null);
 
       // Prepare settings to save
-      const settingsToSave = {
+      const settingsToSave: UserSettings = {
         ...settings,
         openai: {
           ...settings.openai,
-          apiKey: settings.openai.apiKey === '***REDACTED***' ? undefined : settings.openai.apiKey,
+          apiKey: settings.openai.apiKey === '***REDACTED***' ? '' : (settings.openai.apiKey || ''),
           model: settings.openai.model || modelConfigService.getDefaultModel('openai') || 'gpt-3.5-turbo'
         },
         localLLM: {
@@ -528,9 +528,9 @@ export default function SettingsForm({ onSave, onCancel }: SettingsFormProps) {
       setSettings(prev => ({
         ...prev,
         customPrompts: {
-          systemPrompt: globalSettings.system_prompt || '',
-          evaluationPrefix: globalSettings.evaluation_prefix || '',
-          gradingCriteria: globalSettings.grading_criteria || '',
+          systemPrompt: (globalSettings.system_prompt as string) || '',
+          evaluationPrefix: (globalSettings.evaluation_prefix as string) || '',
+          gradingCriteria: (globalSettings.grading_criteria as string) || '',
         },
       }));
       setUseCustomPrompts(true);
