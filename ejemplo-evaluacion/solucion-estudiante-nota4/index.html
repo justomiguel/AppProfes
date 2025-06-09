@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lista de Tareas</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        input[type="text"] {
+            width: 300px;
+            padding: 5px;
+        }
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+        }
+        .task {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px 0;
+        }
+        .completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mi Lista de Tareas</h1>
+        
+        <div>
+            <input type="text" id="taskInput" placeholder="Nueva tarea">
+            <button onclick="addTask()">Agregar</button>
+        </div>
+        
+        <div id="taskList"></div>
+        
+        <div>
+            <button onclick="showAll()">Todas</button>
+            <button onclick="showPending()">Pendientes</button>
+            <button onclick="showCompleted()">Completadas</button>
+        </div>
+    </div>
+
+    <script>
+        var tasks = [];
+        var currentFilter = 'all';
+
+        function addTask() {
+            var input = document.getElementById('taskInput');
+            var text = input.value;
+            
+            if (text) {
+                var task = {
+                    id: Date.now(),
+                    text: text,
+                    completed: false
+                };
+                tasks.push(task);
+                input.value = '';
+                saveTasks();
+                renderTasks();
+            }
+        }
+
+        function toggleTask(id) {
+            for (var i = 0; i < tasks.length; i++) {
+                if (tasks[i].id == id) {
+                    tasks[i].completed = !tasks[i].completed;
+                    break;
+                }
+            }
+            saveTasks();
+            renderTasks();
+        }
+
+        function deleteTask(id) {
+            var newTasks = [];
+            for (var i = 0; i < tasks.length; i++) {
+                if (tasks[i].id != id) {
+                    newTasks.push(tasks[i]);
+                }
+            }
+            tasks = newTasks;
+            saveTasks();
+            renderTasks();
+        }
+
+        function renderTasks() {
+            var container = document.getElementById('taskList');
+            var html = '';
+            
+            for (var i = 0; i < tasks.length; i++) {
+                var task = tasks[i];
+                var show = false;
+                
+                if (currentFilter == 'all') show = true;
+                if (currentFilter == 'pending' && !task.completed) show = true;
+                if (currentFilter == 'completed' && task.completed) show = true;
+                
+                if (show) {
+                    html += '<div class="task">';
+                    html += '<input type="checkbox" ' + (task.completed ? 'checked' : '') + ' onchange="toggleTask(' + task.id + ')">';
+                    html += '<span class="' + (task.completed ? 'completed' : '') + '">' + task.text + '</span>';
+                    html += '<button onclick="deleteTask(' + task.id + ')">Eliminar</button>';
+                    html += '</div>';
+                }
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function showAll() {
+            currentFilter = 'all';
+            renderTasks();
+        }
+
+        function showPending() {
+            currentFilter = 'pending';
+            renderTasks();
+        }
+
+        function showCompleted() {
+            currentFilter = 'completed';
+            renderTasks();
+        }
+
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function loadTasks() {
+            var saved = localStorage.getItem('tasks');
+            if (saved) {
+                tasks = JSON.parse(saved);
+            }
+        }
+
+        // Cargar tareas al iniciar
+        loadTasks();
+        renderTasks();
+    </script>
+</body>
+</html> 

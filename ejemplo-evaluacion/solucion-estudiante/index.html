@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Lista de Tareas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 Mi Lista de Tareas</h1>
+            <p>Organiza tu día de manera eficiente</p>
+        </header>
+
+        <main>
+            <!-- Formulario para agregar tareas -->
+            <section class="add-task-section">
+                <div class="input-container">
+                    <input 
+                        type="text" 
+                        id="taskInput" 
+                        placeholder="¿Qué necesitas hacer hoy?"
+                        maxlength="100"
+                    >
+                    <button id="addBtn" class="add-btn">
+                        <span>+</span>
+                    </button>
+                </div>
+                <div class="error-message" id="errorMessage"></div>
+            </section>
+
+            <!-- Filtros -->
+            <section class="filters">
+                <button class="filter-btn active" data-filter="all">
+                    Todas (<span id="allCount">0</span>)
+                </button>
+                <button class="filter-btn" data-filter="pending">
+                    Pendientes (<span id="pendingCount">0</span>)
+                </button>
+                <button class="filter-btn" data-filter="completed">
+                    Completadas (<span id="completedCount">0</span>)
+                </button>
+            </section>
+
+            <!-- Lista de tareas -->
+            <section class="tasks-section">
+                <div id="tasksList" class="tasks-list">
+                    <!-- Las tareas se generarán dinámicamente aquí -->
+                </div>
+                <div id="emptyState" class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <h3>No hay tareas aún</h3>
+                    <p>Agrega tu primera tarea para comenzar</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Desarrollado por Juan Pérez - Programación Web 2024</p>
+        </footer>
+    </div>
+
+    <!-- Modal para editar tareas -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3>Editar Tarea</h3>
+            <input type="text" id="editInput" maxlength="100">
+            <div class="modal-actions">
+                <button id="saveEditBtn" class="save-btn">Guardar</button>
+                <button id="cancelEditBtn" class="cancel-btn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
