@@ -1,5 +1,3 @@
-import sqlite3 from 'sqlite3';
-import { open, Database } from 'sqlite';
 import { Pool, PoolClient } from 'pg';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
@@ -55,12 +53,7 @@ export interface GlobalSettings {
   updated_by: number; // admin user ID
 }
 
-let db: Database | null = null;
 let pgPool: Pool | null = null;
-
-// Database type detection
-const isProduction = process.env.NODE_ENV === 'production';
-const usePostgreSQL = isProduction && process.env.DATABASE_URL;
 
 // Encryption key for API keys (should be in environment variable)
 const getEncryptionKey = (): Buffer => {
@@ -116,19 +109,38 @@ async function ensureDataDirectory(dbPath: string) {
 async function initPostgreSQL(): Promise<Pool> {
   if (pgPool) return pgPool;
 
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL environment variable is required for PostgreSQL');
+  // Try different environment variable names for DATABASE_URL
+  const databaseUrl = process.env.DATABASE_URL || 
+                     process.env.POSTGRES_URL || 
+                     process.env.POSTGRES_PRISMA_URL ||
+                     process.env.POSTGRES_URL_NON_POOLING;
+
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL environment variable is required. Please set DATABASE_URL, POSTGRES_URL, or POSTGRES_PRISMA_URL');
   }
 
+  console.log('Connecting to PostgreSQL database...');
+
   pgPool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    connectionString: databaseUrl,
+    ssl: {
+      rejectUnauthorized: false,
+      checkServerIdentity: () => undefined
+    },
+    // Connection pool settings
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
   });
 
   // Test connection
   const client = await pgPool.connect();
   
   try {
+    console.log('Testing database connection...');
+    await client.query('SELECT NOW()');
+    console.log('Database connection successful!');
+
     // Create users table
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -207,6 +219,9 @@ async function initPostgreSQL(): Promise<Pool> {
     }
 
     console.log('PostgreSQL database initialized successfully');
+  } catch (error) {
+    console.error('Database initialization error:', error);
+    throw error;
   } finally {
     client.release();
   }
@@ -214,164 +229,47 @@ async function initPostgreSQL(): Promise<Pool> {
   return pgPool;
 }
 
-// SQLite initialization (existing code)
-async function initSQLite(): Promise<Database> {
-  if (db) return db;
-
-  const dbPath = path.join(process.cwd(), 'data', 'ai-evaluador.db');
-  
-  // Ensure data directory exists (server-side only)
-  await ensureDataDirectory(dbPath);
-
-  db = await open({
-    filename: dbPath,
-    driver: sqlite3.Database
-  });
-
-  // Create users table with admin support
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT UNIQUE NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      openai_api_key_encrypted TEXT,
-      settings TEXT DEFAULT '{}',
-      is_admin BOOLEAN DEFAULT 0,
-      is_active BOOLEAN DEFAULT 1,
-      last_login_at DATETIME,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // Check if we need to migrate existing users table
-  const tableInfo = await db.all("PRAGMA table_info(users)");
-  const hasIsAdmin = tableInfo.some(col => col.name === 'is_admin');
-  const hasIsActive = tableInfo.some(col => col.name === 'is_active');
-  const hasLastLoginAt = tableInfo.some(col => col.name === 'last_login_at');
-
-  if (!hasIsAdmin) {
-    await db.exec('ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT 0');
-  }
-
-  if (!hasIsActive) {
-    await db.exec('ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT 1');
-  }
-
-  if (!hasLastLoginAt) {
-    await db.exec('ALTER TABLE users ADD COLUMN last_login_at DATETIME');
-  }
-
-  // Create global settings table
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS global_settings (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      system_prompt TEXT NOT NULL,
-      evaluation_prefix TEXT NOT NULL,
-      grading_criteria TEXT NOT NULL,
-      default_language TEXT DEFAULT 'es',
-      default_grade_scale TEXT DEFAULT '{"min":1,"max":7}',
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_by INTEGER,
-      FOREIGN KEY (updated_by) REFERENCES users (id)
-    )
-  `);
-
-  // Create evaluation history table
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS evaluation_history (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      student_id TEXT NOT NULL,
-      evaluation_id TEXT NOT NULL,
-      grade REAL NOT NULL,
-      explanation TEXT NOT NULL,
-      feedback TEXT NOT NULL,
-      evaluation_version INTEGER DEFAULT 1,
-      is_latest BOOLEAN DEFAULT 1,
-      ai_model TEXT NOT NULL,
-      user_id INTEGER NOT NULL,
-      evaluated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users (id)
-    )
-  `);
-
-  // Create trigger to update updated_at
-  await db.exec(`
-    CREATE TRIGGER IF NOT EXISTS update_users_updated_at 
-    AFTER UPDATE ON users
-    BEGIN
-      UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
-    END
-  `);
-
-  // Make sure justomiguelvargas@gmail.com is admin if exists
-  const adminEmail = 'justomiguelvargas@gmail.com';
-  const adminUser = await db.get('SELECT id FROM users WHERE email = ?', [adminEmail]);
-  
-  if (adminUser) {
-    await db.run('UPDATE users SET is_admin = 1 WHERE email = ?', [adminEmail]);
-    console.log(`Admin privileges granted to ${adminEmail}`);
-  }
-
-  console.log('SQLite database initialized successfully');
-  return db;
-}
-
-export async function initDatabase(): Promise<Database | Pool> {
-  if (usePostgreSQL) {
-    return await initPostgreSQL();
-  } else {
-    return await initSQLite();
-  }
+export async function initDatabase(): Promise<Pool> {
+  return await initPostgreSQL();
 }
 
 // Helper functions for database operations
 async function executeQuery(query: string, params: any[] = []): Promise<any> {
-  if (usePostgreSQL) {
-    const pool = await initDatabase() as Pool;
-    const client = await pool.connect();
-    try {
-      const result = await client.query(query, params);
-      return result.rows;
-    } finally {
-      client.release();
-    }
-  } else {
-    const database = await initDatabase() as Database;
-    return await database.all(query, params);
+  const pool = await initDatabase();
+  const client = await pool.connect();
+  try {
+    const result = await client.query(query, params);
+    return result.rows;
+  } finally {
+    client.release();
   }
 }
 
 async function executeQuerySingle(query: string, params: any[] = []): Promise<any> {
-  if (usePostgreSQL) {
-    const pool = await initDatabase() as Pool;
-    const client = await pool.connect();
-    try {
-      const result = await client.query(query, params);
-      return result.rows[0] || null;
-    } finally {
-      client.release();
-    }
-  } else {
-    const database = await initDatabase() as Database;
-    return await database.get(query, params);
+  const pool = await initDatabase();
+  const client = await pool.connect();
+  try {
+    const result = await client.query(query, params);
+    return result.rows[0] || null;
+  } finally {
+    client.release();
   }
 }
 
 async function executeUpdate(query: string, params: any[] = []): Promise<any> {
-  if (usePostgreSQL) {
-    const pool = await initDatabase() as Pool;
-    const client = await pool.connect();
-    try {
-      const result = await client.query(query, params);
-      return { lastID: result.rows[0]?.id, changes: result.rowCount };
-    } finally {
-      client.release();
+  const pool = await initDatabase();
+  const client = await pool.connect();
+  try {
+    // Only add RETURNING id for INSERT statements that don't already have it
+    let finalQuery = query;
+    if (query.toUpperCase().includes('INSERT') && !query.toUpperCase().includes('RETURNING')) {
+      finalQuery = query + ' RETURNING id';
     }
-  } else {
-    const database = await initDatabase() as Database;
-    return await database.run(query, params);
+    
+    const result = await client.query(finalQuery, params);
+    return { lastID: result.rows[0]?.id, changes: result.rowCount };
+  } finally {
+    client.release();
   }
 }
 
@@ -380,9 +278,7 @@ export async function createUser(username: string, email: string, password: stri
 
   // Check if user already exists
   const existingUser = await executeQuerySingle(
-    usePostgreSQL 
-      ? 'SELECT id FROM users WHERE username = $1 OR email = $2'
-      : 'SELECT id FROM users WHERE username = ? OR email = ?',
+    'SELECT id FROM users WHERE username = $1 OR email = $2',
     [username, email]
   );
 
@@ -413,53 +309,30 @@ export async function createUser(username: string, email: string, password: stri
     customPrompts: {}
   };
 
-  if (usePostgreSQL) {
-    const result = await executeUpdate(
-      `INSERT INTO users (username, email, password_hash, settings, created_at, updated_at) 
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-      [username, email, hashedPassword, JSON.stringify(defaultSettings), now, now]
-    );
-    
-    return {
-      id: result.lastID,
-      username,
-      email,
-      password_hash: hashedPassword,
-      settings: JSON.stringify(defaultSettings),
-      is_admin: false,
-      is_active: true,
-      created_at: now,
-      updated_at: now
-    };
-  } else {
-    const result = await executeUpdate(
-      `INSERT INTO users (username, email, password_hash, settings, created_at, updated_at) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [username, email, hashedPassword, JSON.stringify(defaultSettings), now, now]
-    );
-
-    return {
-      id: result.lastID,
-      username,
-      email,
-      password_hash: hashedPassword,
-      settings: JSON.stringify(defaultSettings),
-      is_admin: false,
-      is_active: true,
-      created_at: now,
-      updated_at: now
-    };
-  }
+  const result = await executeUpdate(
+    'INSERT INTO users (username, email, password_hash, settings, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)',
+    [username, email, hashedPassword, JSON.stringify(defaultSettings), now, now]
+  );
+  
+  return {
+    id: result.lastID,
+    username,
+    email,
+    password_hash: hashedPassword,
+    settings: JSON.stringify(defaultSettings),
+    is_admin: false,
+    is_active: true,
+    created_at: now,
+    updated_at: now
+  };
 }
 
 export async function authenticateUser(username: string, password: string): Promise<User | null> {
   await initDatabase();
 
   const user = await executeQuerySingle(
-    usePostgreSQL
-      ? 'SELECT * FROM users WHERE (username = $1 OR email = $1) AND is_active = $2'
-      : 'SELECT * FROM users WHERE (username = ? OR email = ?) AND is_active = 1',
-    usePostgreSQL ? [username, true] : [username, username]
+    'SELECT * FROM users WHERE (username = $1 OR email = $1) AND is_active = $2',
+    [username, true]
   );
 
   if (!user) {
@@ -473,9 +346,7 @@ export async function authenticateUser(username: string, password: string): Prom
 
   // Update last login
   await executeUpdate(
-    usePostgreSQL
-      ? 'UPDATE users SET last_login_at = $1 WHERE id = $2'
-      : 'UPDATE users SET last_login_at = ? WHERE id = ?',
+    'UPDATE users SET last_login_at = $1 WHERE id = $2',
     [new Date().toISOString(), user.id]
   );
 
@@ -486,7 +357,7 @@ export async function getUserById(id: number): Promise<User | null> {
   await initDatabase();
   
   return await executeQuerySingle(
-    usePostgreSQL ? 'SELECT * FROM users WHERE id = $1' : 'SELECT * FROM users WHERE id = ?',
+    'SELECT * FROM users WHERE id = $1',
     [id]
   );
 }
@@ -495,9 +366,7 @@ export async function updateUserSettings(userId: number, settings: UserSettings)
   await initDatabase();
   
   await executeUpdate(
-    usePostgreSQL
-      ? 'UPDATE users SET settings = $1 WHERE id = $2'
-      : 'UPDATE users SET settings = ? WHERE id = ?',
+    'UPDATE users SET settings = $1 WHERE id = $2',
     [JSON.stringify(settings), userId]
   );
 }
@@ -508,9 +377,7 @@ export async function updateUserApiKey(userId: number, apiKey: string): Promise<
   const encryptedApiKey = encrypt(apiKey);
   
   await executeUpdate(
-    usePostgreSQL
-      ? 'UPDATE users SET openai_api_key_encrypted = $1 WHERE id = $2'
-      : 'UPDATE users SET openai_api_key_encrypted = ? WHERE id = ?',
+    'UPDATE users SET openai_api_key_encrypted = $1 WHERE id = $2',
     [encryptedApiKey, userId]
   );
 }
@@ -519,7 +386,7 @@ export async function getUserSettings(userId: number): Promise<UserSettings | nu
   await initDatabase();
   
   const user = await executeQuerySingle(
-    usePostgreSQL ? 'SELECT * FROM users WHERE id = $1' : 'SELECT * FROM users WHERE id = ?',
+    'SELECT * FROM users WHERE id = $1',
     [userId]
   );
 
@@ -603,7 +470,7 @@ export async function getAllUsers(adminUserId: number): Promise<User[]> {
   
   // Verify admin privileges
   const admin = await executeQuerySingle(
-    usePostgreSQL ? 'SELECT is_admin FROM users WHERE id = $1' : 'SELECT is_admin FROM users WHERE id = ?',
+    'SELECT is_admin FROM users WHERE id = $1',
     [adminUserId]
   );
   
@@ -621,7 +488,7 @@ export async function updateUserAdminStatus(adminUserId: number, targetUserId: n
   
   // Verify admin privileges
   const admin = await executeQuerySingle(
-    usePostgreSQL ? 'SELECT is_admin FROM users WHERE id = $1' : 'SELECT is_admin FROM users WHERE id = ?',
+    'SELECT is_admin FROM users WHERE id = $1',
     [adminUserId]
   );
   
@@ -635,9 +502,7 @@ export async function updateUserAdminStatus(adminUserId: number, targetUserId: n
   }
   
   await executeUpdate(
-    usePostgreSQL
-      ? 'UPDATE users SET is_admin = $1 WHERE id = $2'
-      : 'UPDATE users SET is_admin = ? WHERE id = ?',
+    'UPDATE users SET is_admin = $1 WHERE id = $2',
     [isAdmin, targetUserId]
   );
 }
@@ -647,7 +512,7 @@ export async function updateUserActiveStatus(adminUserId: number, targetUserId: 
   
   // Verify admin privileges
   const admin = await executeQuerySingle(
-    usePostgreSQL ? 'SELECT is_admin FROM users WHERE id = $1' : 'SELECT is_admin FROM users WHERE id = ?',
+    'SELECT is_admin FROM users WHERE id = $1',
     [adminUserId]
   );
   
@@ -661,9 +526,7 @@ export async function updateUserActiveStatus(adminUserId: number, targetUserId: 
   }
   
   await executeUpdate(
-    usePostgreSQL
-      ? 'UPDATE users SET is_active = $1 WHERE id = $2'
-      : 'UPDATE users SET is_active = ? WHERE id = ?',
+    'UPDATE users SET is_active = $1 WHERE id = $2',
     [isActive, targetUserId]
   );
 }
@@ -689,7 +552,7 @@ export async function updateGlobalSettings(
   
   // Verify admin privileges
   const admin = await executeQuerySingle(
-    usePostgreSQL ? 'SELECT is_admin FROM users WHERE id = $1' : 'SELECT is_admin FROM users WHERE id = ?',
+    'SELECT is_admin FROM users WHERE id = $1',
     [adminUserId]
   );
   
@@ -706,16 +569,12 @@ export async function updateGlobalSettings(
   
   if (existingSettings) {
     await executeUpdate(
-      usePostgreSQL
-        ? 'UPDATE global_settings SET system_prompt = $1, evaluation_prefix = $2, grading_criteria = $3, default_language = $4, default_grade_scale = $5, updated_at = $6, updated_by = $7'
-        : 'UPDATE global_settings SET system_prompt = ?, evaluation_prefix = ?, grading_criteria = ?, default_language = ?, default_grade_scale = ?, updated_at = ?, updated_by = ?',
+      'UPDATE global_settings SET system_prompt = $1, evaluation_prefix = $2, grading_criteria = $3, default_language = $4, default_grade_scale = $5, updated_at = $6, updated_by = $7',
       [systemPrompt, evaluationPrefix, gradingCriteria, defaultLanguage, JSON.stringify(defaultGradeScale), now, adminUserId]
     );
   } else {
     await executeUpdate(
-      usePostgreSQL
-        ? 'INSERT INTO global_settings (system_prompt, evaluation_prefix, grading_criteria, default_language, default_grade_scale, updated_at, updated_by) VALUES ($1, $2, $3, $4, $5, $6, $7)'
-        : 'INSERT INTO global_settings (system_prompt, evaluation_prefix, grading_criteria, default_language, default_grade_scale, updated_at, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO global_settings (system_prompt, evaluation_prefix, grading_criteria, default_language, default_grade_scale, updated_at, updated_by) VALUES ($1, $2, $3, $4, $5, $6, $7)',
       [systemPrompt, evaluationPrefix, gradingCriteria, defaultLanguage, JSON.stringify(defaultGradeScale), now, adminUserId]
     );
   }
@@ -735,17 +594,13 @@ export async function saveEvaluationResult(
   
   // Mark previous results as not latest
   await executeUpdate(
-    usePostgreSQL
-      ? 'UPDATE evaluation_history SET is_latest = $1 WHERE student_id = $2 AND evaluation_id = $3'
-      : 'UPDATE evaluation_history SET is_latest = 0 WHERE student_id = ? AND evaluation_id = ?',
-    usePostgreSQL ? [false, studentId, evaluationId] : [studentId, evaluationId]
+    'UPDATE evaluation_history SET is_latest = $1 WHERE student_id = $2 AND evaluation_id = $3',
+    [false, studentId, evaluationId]
   );
   
   // Get next version number
   const lastResult = await executeQuerySingle(
-    usePostgreSQL
-      ? 'SELECT MAX(evaluation_version) as max_version FROM evaluation_history WHERE student_id = $1 AND evaluation_id = $2'
-      : 'SELECT MAX(evaluation_version) as max_version FROM evaluation_history WHERE student_id = ? AND evaluation_id = ?',
+    'SELECT MAX(evaluation_version) as max_version FROM evaluation_history WHERE student_id = $1 AND evaluation_id = $2',
     [studentId, evaluationId]
   );
   
@@ -753,10 +608,8 @@ export async function saveEvaluationResult(
   
   // Insert new result
   await executeUpdate(
-    usePostgreSQL
-      ? 'INSERT INTO evaluation_history (student_id, evaluation_id, grade, explanation, feedback, evaluation_version, is_latest, ai_model, user_id, evaluated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)'
-      : 'INSERT INTO evaluation_history (student_id, evaluation_id, grade, explanation, feedback, evaluation_version, is_latest, ai_model, user_id, evaluated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [studentId, evaluationId, grade, explanation, feedback, nextVersion, usePostgreSQL ? true : 1, aiModel, userId, new Date().toISOString()]
+    'INSERT INTO evaluation_history (student_id, evaluation_id, grade, explanation, feedback, evaluation_version, is_latest, ai_model, user_id, evaluated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
+    [studentId, evaluationId, grade, explanation, feedback, nextVersion, true, aiModel, userId, new Date().toISOString()]
   );
 }
 
@@ -764,9 +617,7 @@ export async function getEvaluationHistory(studentId: string, evaluationId: stri
   await initDatabase();
   
   return await executeQuery(
-    usePostgreSQL
-      ? 'SELECT * FROM evaluation_history WHERE student_id = $1 AND evaluation_id = $2 ORDER BY evaluation_version DESC'
-      : 'SELECT * FROM evaluation_history WHERE student_id = ? AND evaluation_id = ? ORDER BY evaluation_version DESC',
+    'SELECT * FROM evaluation_history WHERE student_id = $1 AND evaluation_id = $2 ORDER BY evaluation_version DESC',
     [studentId, evaluationId]
   );
 }
@@ -775,9 +626,7 @@ export async function getLatestEvaluationResult(studentId: string, evaluationId:
   await initDatabase();
   
   return await executeQuerySingle(
-    usePostgreSQL
-      ? 'SELECT * FROM evaluation_history WHERE student_id = $1 AND evaluation_id = $2 AND is_latest = $3'
-      : 'SELECT * FROM evaluation_history WHERE student_id = ? AND evaluation_id = ? AND is_latest = 1',
-    usePostgreSQL ? [studentId, evaluationId, true] : [studentId, evaluationId]
+    'SELECT * FROM evaluation_history WHERE student_id = $1 AND evaluation_id = $2 AND is_latest = $3',
+    [studentId, evaluationId, true]
   );
 } 
