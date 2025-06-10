@@ -218,7 +218,7 @@ export default function StudentForm({ evaluationId, student, onSave, onCancel }:
               onChange={handleFileUpload}
               className="hidden"
               id="file-upload"
-              accept=".pdf,.docx,.doc,.txt,.md,.js,.ts,.jsx,.tsx,.json,.html,.css,.zip"
+              accept="*"
             />
             <label htmlFor="file-upload" className="cursor-pointer">
               <Upload className="mx-auto h-12 w-12 text-gray-400" />

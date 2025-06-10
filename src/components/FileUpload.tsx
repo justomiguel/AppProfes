@@ -22,7 +22,7 @@ export default function FileUpload({
   category, 
   label, 
   description,
-  accept = ".pdf,.docx,.doc,.txt,.md,.js,.ts,.jsx,.tsx,.json,.html,.css,.zip,.png,.jpg,.jpeg",
+  accept = "*",
   maxFiles = 10
 }: FileUploadProps) {
   const [isLoading, setIsLoading] = useState(false);
